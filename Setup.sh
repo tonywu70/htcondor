@@ -4,6 +4,8 @@ sudo apt-key adv --keyserver packages.microsoft.com --recv-keys 417A0893
 sudo apt-get install apt-transport-https
 sudo apt-get update && sudo apt-get install azure-cli
 
+wget -O /root/keyVault.sh 'https://raw.githubusercontent.com/azmigproject/HTCondor/master/KeyVault.sh'
+
 chmod 700 /root/keyVault.sh
 	crontab -l > KeyVaultcron
 	echo "@reboot /root/keyVault.sh >>/root/log.txt" >> KeyVaultcron
