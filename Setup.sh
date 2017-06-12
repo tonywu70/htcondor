@@ -7,7 +7,7 @@ sudo apt-get update && sudo apt-get install azure-cli
 
 #wget -O /root/keyVault.sh 'https://raw.githubusercontent.com/azmigproject/HTCondor/master/KeyVault.sh'
 
-echo /var/lib/cloud/instance/user-data.txt > "/root/keyVault.sh"
+cat /var/lib/cloud/instance/user-data.txt > "/root/keyVault.sh"
 
 # Register cron tab so when machine restart it downloads the secret from azure keyVault
 chmod 700 /root/keyVault.sh
