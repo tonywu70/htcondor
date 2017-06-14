@@ -6,7 +6,7 @@ sudo apt-get install apt-transport-https
 sudo apt-get update && sudo apt-get install azure-cli
 
 # Retrieve commands which were uploaded from custom data and create shell script
-mdir -p /root/scripts
+mkdir -p /root/scripts
 cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/keyVault.sh"
 
 # Register cron tab so when machine restart it downloads the secret from azure keyVault
