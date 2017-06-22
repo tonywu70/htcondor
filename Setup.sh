@@ -15,3 +15,5 @@ chmod 700 /root/scripts/keyVault.sh
 	echo "@reboot /root/scripts/keyVault.sh >> /root/scripts/log.txt" >> KeyVaultcron
 	crontab KeyVaultcron
 	rm KeyVaultcron
+	
+reboot
