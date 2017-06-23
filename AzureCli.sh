@@ -4,4 +4,4 @@ yum -y install epel-release
 yum -y install python34 python34-devel
 curl -O https://bootstrap.pypa.io/get-pip.py
 python3 get-pip.py
-pip install --user azure-cli
+pip3 install --user azure-cli
