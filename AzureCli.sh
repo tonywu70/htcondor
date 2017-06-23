@@ -2,6 +2,6 @@
 #curl -s -L https://aka.ms/InstallAzureCli | bash
 #yum -y install epel-release
 #yum -y install python34 python34-devel
-curl -O https://bootstrap.pypa.io/get-pip.py
-python get-pip.py
-pip install --user azure-cli
+#curl -O https://bootstrap.pypa.io/get-pip.py
+#python get-pip.py
+#pip install --user azure-cli
