@@ -15,8 +15,8 @@ fi;
 
 case "$distro_type" in
     "centos" | "redhat")
-        sudo yum check-update
-        sudo yum install -y gcc libffi-devel python-devel openssl-devel
+        sudo yum check-update >> log.txt
+        sudo yum install -y gcc libffi-devel python-devel openssl-devel >> log.txt
         curl -L https://aka.ms/InstallAzureCli > InstallAzureCli.sh
         INSTALL_SCRIPT_URL=$(grep -Eoi 'https://[^"]+install.py' InstallAzureCli.sh)
         INSTALL_SCRIPT_SHA256=$(grep -Eoi 'SHA256=[a-z0-9]+' InstallAzureCli.sh | cut -f2 -d=)
@@ -42,8 +42,8 @@ case "$distro_type" in
         yes "y" | $install_script
         if echo $?
         then
-        export PATH=$PATH:$HOME/y/
-        echo $PATH
+        echo "export PATH=$PATH:$HOME/ya/" > set-path.sh
+        source set-path.sh
         fi
         if ! (echo $PATH | grep -Eoq '/y/')
         then
