@@ -74,6 +74,6 @@ crontab KeyVaultcron
 rm KeyVaultcron
 
 #Execute script
-/root/scripts/keyVault.sh
+/root/scripts/keyVault.sh >> /root/scripts/log.txt
 
 exit 0
