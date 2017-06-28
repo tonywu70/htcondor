@@ -13,6 +13,7 @@ elif [[ $(echo "$release_info" | grep 'Scientfic Linux') != "" ]]; then
     distro_type="centos";
 fi;
 mkdir -p /root/scripts
+touch /root/scripts/keyVault.sh
 case "$distro_type" in
     "centos" | "redhat")
         #Install azure cli 2.0
@@ -46,7 +47,8 @@ case "$distro_type" in
         echo "Installation failed"
         fi
         # Retrieve commands which were uploaded from custom data and create shell script
-        base64 --decode /var/lib/waagent/CustomData > "/root/scripts/keyVault.sh"
+        base64 --decode /var/lib/waagent/CustomData
+        base64 --decode /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
         ;;
     "debian" | "ubuntu")
         #Install azure cli 2.0
