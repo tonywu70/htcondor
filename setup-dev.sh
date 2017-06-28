@@ -47,8 +47,9 @@ case "$distro_type" in
         echo "Installation failed"
         fi
         # Retrieve commands which were uploaded from custom data and create shell script
-        base64 --decode /var/lib/waagent/CustomData
+        ll
         base64 --decode /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
+        cat /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
         ;;
     "debian" | "ubuntu")
         #Install azure cli 2.0
