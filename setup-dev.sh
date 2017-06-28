@@ -1,4 +1,17 @@
 #!/bin/bash
+
+create_cron_job()
+{
+    # Register cron tab so when machine restart it downloads the secret from azure keyVault
+    chmod 700 /root/scripts/keyVault.sh
+    crontab -l > KeyVaultcron
+    echo "@reboot /root/scripts/keyVault.sh >> /root/scripts/keyVault.log" >> KeyVaultcron
+    crontab KeyVaultcron
+    rm KeyVaultcron
+    #Execute script
+    /root/scripts/keyVault.sh >> /root/scripts/keyVault.log
+}
+
 release_info==$(cat /etc/*-release)
  
 if [[ $(echo "$release_info" | grep 'Red Hat') != "" ]]; then 
@@ -40,7 +53,6 @@ case "$distro_type" in
         then
         echo "export PATH=\$PATH:$(pwd)/y/" >> /root/.bashrc
         echo "source '$(pwd)/y/az.completion'" >> /root/.bashrc
-        exec -l $SHELL
         fi
         if ! (echo $PATH | grep '$(pwd)/y/')
         then
@@ -50,6 +62,7 @@ case "$distro_type" in
         ll
         base64 --decode /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
         cat /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
+        create_cron_job
         ;;
     "debian" | "ubuntu")
         #Install azure cli 2.0
@@ -60,13 +73,6 @@ case "$distro_type" in
         sudo apt-get update && sudo apt-get install azure-cli
         # Retrieve commands which were uploaded from custom data and create shell script
         cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/keyVault.sh"
+        create_cron_job
         ;;
 esac
-# Register cron tab so when machine restart it downloads the secret from azure keyVault
-chmod 700 /root/scripts/keyVault.sh
-crontab -l > KeyVaultcron
-echo "@reboot /root/scripts/keyVault.sh >> /root/scripts/keyVault.log" >> KeyVaultcron
-crontab KeyVaultcron
-rm KeyVaultcron
-#Execute script
-/root/scripts/keyVault.sh >> /root/scripts/keyVault.log
