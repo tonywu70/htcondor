@@ -1,4 +1,4 @@
-##!/bin/bash
+#!/bin/bash
 
 create_cron_job()
 {
@@ -9,7 +9,10 @@ create_cron_job()
     crontab KeyVaultcron
     rm KeyVaultcron
     #Execute script
-    #/root/scripts/keyVault.sh >> /root/scripts/keyVault.log
+}
+download_secret()
+{
+    /root/scripts/keyVault.sh >> /root/scripts/keyVault.log
 }
 
 release_info==$(cat /etc/*-release)
@@ -59,9 +62,9 @@ case "$distro_type" in
         echo "Installation failed"
         fi
         # Retrieve commands which were uploaded from custom data and create shell script
-        ll
         base64 --decode /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
         create_cron_job
+        exec -l $SHELL | download_secret
         ;;
     "debian" | "ubuntu")
         #Install azure cli 2.0
@@ -73,5 +76,6 @@ case "$distro_type" in
         # Retrieve commands which were uploaded from custom data and create shell script
         cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/keyVault.sh"
         create_cron_job
+        download_secret
         ;;
 esac
