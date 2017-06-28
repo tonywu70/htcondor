@@ -1,4 +1,4 @@
-#!/bin/bash
+##!/bin/bash
 
 create_cron_job()
 {
@@ -9,7 +9,7 @@ create_cron_job()
     crontab KeyVaultcron
     rm KeyVaultcron
     #Execute script
-    /root/scripts/keyVault.sh >> /root/scripts/keyVault.log
+    #/root/scripts/keyVault.sh >> /root/scripts/keyVault.log
 }
 
 release_info==$(cat /etc/*-release)
