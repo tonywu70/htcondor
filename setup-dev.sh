@@ -64,7 +64,8 @@ case "$distro_type" in
         # Retrieve commands which were uploaded from custom data and create shell script
         base64 --decode /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
         create_cron_job
-        exec -l $SHELL | download_secret
+        source ~/.bashrc
+        download_secret
         ;;
     "debian" | "ubuntu")
         #Install azure cli 2.0
