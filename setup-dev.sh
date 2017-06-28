@@ -37,10 +37,11 @@ case "$distro_type" in
         yes "y" | $install_script
         if echo $?
         then
-        echo "export PATH=$PATH:$(pwd)/y/" > set-path.sh
-        source set-path.sh
+        echo "export PATH=\$PATH:$(pwd)/y/" >> /root/.bashrc
+        echo "source '$(pwd)/y/az.completion'" >> /root/.bashrc
+        exec -l $SHELL
         fi
-        if ! (echo $PATH | grep -Eoq '/y/')
+        if ! (echo $PATH | grep '$(pwd)/y/')
         then
         echo "Installation failed"
         fi
