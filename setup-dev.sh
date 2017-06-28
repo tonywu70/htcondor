@@ -8,10 +8,10 @@ create_cron_job()
     echo "@reboot /root/scripts/keyVault.sh >> /root/scripts/keyVault.log" >> KeyVaultcron
     crontab KeyVaultcron
     rm KeyVaultcron
-    #Execute script
 }
 download_secret()
 {
+    # Execute script
     /root/scripts/keyVault.sh >> /root/scripts/keyVault.log
 }
 
