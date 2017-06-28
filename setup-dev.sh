@@ -15,34 +15,29 @@ fi;
 
 case "$distro_type" in
     "centos" | "redhat")
+        echo $distro_type >> log.txt
         sudo yum check-update >> log.txt
         sudo yum install -y gcc libffi-devel python-devel openssl-devel >> log.txt
         curl -L https://aka.ms/InstallAzureCli > InstallAzureCli.sh
-        INSTALL_SCRIPT_URL=$(grep -Eoi 'https://[^"]+install.py' InstallAzureCli.sh)
-        INSTALL_SCRIPT_SHA256=$(grep -Eoi 'SHA256=[a-z0-9]+' InstallAzureCli.sh | cut -f2 -d=)
+        INSTALL_SCRIPT_URL="https://azurecliprod.blob.core.windows.net/install.py"
         install_script=$(mktemp -t azure_cli_install_tmp_XXXX) || exit
         echo "Downloading Azure CLI install script from $INSTALL_SCRIPT_URL to $install_script."
         curl -# $INSTALL_SCRIPT_URL > $install_script || exit
-        if command -v sha256sum >/dev/null 2>&1
-        then
-        echo "$INSTALL_SCRIPT_SHA256  $install_script" | sha256sum -c - || exit
-        elif command -v shasum >/dev/null 2>&1
-        then
-        echo "$INSTALL_SCRIPT_SHA256  $install_script" | shasum -a 256 -c - || exit
-        fi
+        # check for the Python installation
         if ! command -v python >/dev/null 2>&1
         then
         echo "ERROR: Python not found. 'command -v python' returned failure."
         echo "If python is available on the system, add it to PATH. For example 'sudo ln -s /usr/bin/python3 /usr/bin/python'"
         exit 1
         fi
+        # make python install script executable
         chmod 775 $install_script
         echo "Running install script."
         echo $install_script
         yes "y" | $install_script
         if echo $?
         then
-        echo "export PATH=$PATH:$HOME/ya/" > set-path.sh
+        echo "export PATH=$PATH:$(pwd)/y/" > set-path.sh
         source set-path.sh
         fi
         if ! (echo $PATH | grep -Eoq '/y/')
@@ -52,7 +47,7 @@ case "$distro_type" in
         ;;
     "debian" | "ubuntu")
         #echo $distro_type
-
+        echo $distro_type >> log.txt
         #Install azure cli 2.0
         echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main" | \
         sudo tee /etc/apt/sources.list.d/azure-cli.list
