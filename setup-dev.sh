@@ -99,7 +99,7 @@ create_cron_job()
     # Register cron tab so when machine restart it downloads the secret from azure keyVault
     chmod 755 /root/scripts/keyVault.sh
     crontab -l >> KeyVaultcron
-    echo '@reboot sudo env "PATH=$PATH" /root/scripts/keyVault.sh 1> /dev/null 2> /root/scripts/job.err' >> KeyVaultcron
+    echo '@reboot /root/scripts/keyVault.sh >> /root/scripts/cronjob.log' >> KeyVaultcron
     crontab KeyVaultcron
     rm KeyVaultcron
 }
