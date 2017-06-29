@@ -132,7 +132,7 @@ case "$distro_type" in
         download_secret
         ;;
     "ubuntu")
-        install_azure_cli_debian_ubuntu
+        install_azure_cli_ubuntu
         # Retrieve commands which were uploaded from custom data and create shell script
         cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/keyVault.sh"
         create_cron_job
