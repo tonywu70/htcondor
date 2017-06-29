@@ -19,7 +19,7 @@ install_python_2_7()
     export PATH="/usr/local/bin:$PATH"
     echo $PATH
 }
-is_python_version_ok()
+is_python_version_old()
 {
     python_version="$(python -c 'import platform; version=platform.python_version(); print(version)' | grep -Eo '2.[0-9]')"
     echo "Existing version of Python: "
@@ -38,7 +38,7 @@ is_python_version_ok()
 }
 install_azure_cli_centos_redhat()
 {
-    if ! is_python_version_ok
+    if ! is_python_version_old
     then
         echo "Installing Python 2.7.10..."
         install_python_2_7
@@ -66,7 +66,12 @@ install_azure_cli_centos_redhat()
     then
         echo "Running install script."
         echo $install_script
-        yes "" | python2.7 $install_script
+        if ! is_python_version_old
+        then
+            yes "" | python2.7 $install_script
+        else
+            yes "" | python $install_script
+        fi
     fi
 }
 set_path_centos_redhat()
