@@ -106,7 +106,7 @@ create_cron_job()
 create_entry_in_initd()
 {
     # Create a script in /etc/ini.d/ which will run downloadsecret.sh file at startup
-    cat > /etc/init.d/downloadsecret << EOF
+    cat > /etc/init.d/rundownloadsecret << EOF
 #!/bin/bash
 # chkconfig: 2345 20 80
 # description: Execute the shell script at startup which downloads the secret from Azure key vault
