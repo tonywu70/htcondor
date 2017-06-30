@@ -86,10 +86,10 @@ create_cron_job()
 {
     # Register cron tab so when machine restart it downloads the secret from azure downloadsecret
     chmod 700 /root/scripts/downloadsecret.sh
-    crontab -l > downloadsecretcron
-    echo '@reboot sudo /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log' >> downloadsecretcron
-    crontab downloadsecretcron
-    rm downloadsecretcron
+    crontab -l > cronjobs
+    echo '@reboot /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log' >> cronjobs
+    crontab cronjobs
+    rm cronjobs
 }
 download_secret()
 {
