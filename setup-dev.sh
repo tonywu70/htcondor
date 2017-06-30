@@ -86,10 +86,24 @@ create_cron_job()
 {
     # Register cron tab so when machine restart it downloads the secret from azure downloadsecret
     chmod 700 /root/scripts/downloadsecret.sh
-    crontab -l > cronjobs
-    echo '@reboot /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log' >> cronjobs
-    crontab cronjobs
-    rm cronjobs
+    crontab -l > downloadsecretcron
+    echo '@reboot /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log' >> downloadsecretcron
+    crontab downloadsecretcron
+    rm downloadsecretcron
+}
+create_entry_in_initd()
+{
+    cat > /etc/init.d/downloadsecret << EOF
+#!/bin/bash
+# chkconfig: 2345 20 80
+# description: Execute the shell script at startup which downloads the secret from Azure key vault
+/root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log
+exit 0
+EOF
+    chmod 700 /etc/init.d/downloadsecret
+    chkconfig --add downloadsecret
+    chkconfig --level 2345 downloadsecret on
+    chkconfig --list | grep downloadsecret
 }
 download_secret()
 {
@@ -114,7 +128,7 @@ case "$distro_type" in
         install_azure_cli_centos_redhat
         # Retrieve commands which were uploaded from custom data and create shell script
         base64 --decode /var/lib/waagent/CustomData > /root/scripts/downloadsecret.sh
-        create_cron_job
+        create_entry_in_initd
         source ~/.bashrc
         download_secret
         ;;
