@@ -1,5 +1,18 @@
 #!/bin/bash
-
+distro_type=""
+get_distro_type()
+{
+    release_info==$(cat /etc/*-release) 
+    if [[ $(echo "$release_info" | grep 'Red Hat') != "" ]]; then 
+        distro_type="redhat"; 
+    elif [[ $(echo "$release_info" | grep 'CentOS') != "" ]] ; then 
+        distro_type="centos"; 
+    elif [[ $(echo "$release_info" | grep 'Ubuntu') != "" ]] ; then 
+        distro_type="ubuntu"; 
+    elif [[ $(echo "$release_info" | grep 'Scientfic Linux') != "" ]]; then 
+        distro_type="centos";
+    fi;
+}
 install_python_2_7()
 {
     sudo yum -y update
@@ -85,58 +98,53 @@ install_azure_cli_ubuntu()
 create_cron_job()
 {
     # Register cron tab so when machine restart it downloads the secret from azure downloadsecret
-    chmod 700 /root/scripts/downloadsecret.sh
     crontab -l > downloadsecretcron
-    echo '@reboot /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log' >> downloadsecretcron
+    echo '@reboot /root/scripts/downloadsecret.sh >> /root/scripts/execution.log' >> downloadsecretcron
     crontab downloadsecretcron
     rm downloadsecretcron
 }
 create_entry_in_initd()
 {
+    # Create a script in /etc/ini.d/ which will run downloadsecret.sh file at startup
     cat > /etc/init.d/downloadsecret << EOF
 #!/bin/bash
 # chkconfig: 2345 20 80
 # description: Execute the shell script at startup which downloads the secret from Azure key vault
-/root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log
+/root/scripts/downloadsecret.sh >> /root/scripts/execution.log
 exit 0
 EOF
-    chmod 700 /etc/init.d/downloadsecret
-    chkconfig --add downloadsecret
-    chkconfig --level 2345 downloadsecret on
-    chkconfig --list | grep downloadsecret
+    chmod 700 /etc/init.d/rundownloadsecret
+    chkconfig --add rundownloadsecret
+    chkconfig --level 2345 rundownloadsecret on
+    chkconfig --list | grep rundownloadsecret
 }
 download_secret()
 {
     # Execute script
-    /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log
+    /root/scripts/downloadsecret.sh >> /root/scripts/execution.log
 }
-release_info==$(cat /etc/*-release)
- 
-if [[ $(echo "$release_info" | grep 'Red Hat') != "" ]]; then 
-    distro_type="redhat"; 
-elif [[ $(echo "$release_info" | grep 'CentOS') != "" ]] ; then 
-    distro_type="centos"; 
-elif [[ $(echo "$release_info" | grep 'Ubuntu') != "" ]] ; then 
-    distro_type="ubuntu"; 
-elif [[ $(echo "$release_info" | grep 'Scientfic Linux') != "" ]]; then 
-    distro_type="centos";
-fi;
-mkdir -p /root/scripts
-touch /root/scripts/downloadsecret.sh
-case "$distro_type" in
-    "centos" | "redhat")
-        install_azure_cli_centos_redhat
-        # Retrieve commands which were uploaded from custom data and create shell script
-        base64 --decode /var/lib/waagent/CustomData > /root/scripts/downloadsecret.sh
-        create_entry_in_initd
-        source ~/.bashrc
-        download_secret
-        ;;
-    "ubuntu")
-        install_azure_cli_ubuntu
-        # Retrieve commands which were uploaded from custom data and create shell script
-        cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/downloadsecret.sh"
-        create_cron_job
-        download_secret
-        ;;
-esac
+main()
+{
+    mkdir -p /root/scripts
+    touch /root/scripts/downloadsecret.sh
+    chmod 700 /root/scripts/downloadsecret.sh
+    get_distro_type
+    case "$distro_type" in
+        "centos" | "redhat")
+            install_azure_cli_centos_redhat
+            # Retrieve commands which were uploaded from custom data and create shell script
+            base64 --decode /var/lib/waagent/CustomData > /root/scripts/downloadsecret.sh
+            create_entry_in_initd
+            source ~/.bashrc
+            download_secret
+            ;;
+        "ubuntu")
+            install_azure_cli_ubuntu
+            # Retrieve commands which were uploaded from custom data and create shell script
+            cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/downloadsecret.sh"
+            create_cron_job
+            download_secret
+            ;;
+    esac
+}
+main
