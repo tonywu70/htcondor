@@ -74,18 +74,6 @@ install_azure_cli_centos_redhat()
         fi
     fi
 }
-set_path_centos_redhat()
-{
-    if echo $?
-    then
-        echo "export PATH=\$PATH:$(pwd)/y/" >> /root/.bashrc
-        echo "source '$(pwd)/y/az.completion'" >> /root/.bashrc
-    fi
-    if ! (echo $PATH | grep '$(pwd)/y/')
-    then
-        echo "Installation failed"
-    fi
-}
 install_azure_cli_ubuntu()
 {
     echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main" | \
@@ -96,17 +84,17 @@ install_azure_cli_ubuntu()
 }
 create_cron_job()
 {
-    # Register cron tab so when machine restart it downloads the secret from azure keyVault
-    chmod 755 /root/scripts/keyVault.sh
-    crontab -l >> KeyVaultcron
-    echo '@reboot /root/scripts/keyVault.sh >> /root/scripts/cronjob.log' >> KeyVaultcron
-    crontab KeyVaultcron
-    rm KeyVaultcron
+    # Register cron tab so when machine restart it downloads the secret from azure downloadsecret
+    chmod 700 /root/scripts/downloadsecret.sh
+    crontab -l > downloadsecretcron
+    echo '@reboot sudo /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log' >> downloadsecretcron
+    crontab downloadsecretcron
+    rm downloadsecretcron
 }
 download_secret()
 {
     # Execute script
-    /root/scripts/keyVault.sh >> /root/scripts/keyVault.log
+    /root/scripts/downloadsecret.sh >> /root/scripts/scriptexecution.log
 }
 release_info==$(cat /etc/*-release)
  
@@ -120,13 +108,12 @@ elif [[ $(echo "$release_info" | grep 'Scientfic Linux') != "" ]]; then
     distro_type="centos";
 fi;
 mkdir -p /root/scripts
-touch /root/scripts/keyVault.sh
+touch /root/scripts/downloadsecret.sh
 case "$distro_type" in
     "centos" | "redhat")
         install_azure_cli_centos_redhat
-        #set_path_centos_redhat
         # Retrieve commands which were uploaded from custom data and create shell script
-        base64 --decode /var/lib/waagent/CustomData > /root/scripts/keyVault.sh
+        base64 --decode /var/lib/waagent/CustomData > /root/scripts/downloadsecret.sh
         create_cron_job
         source ~/.bashrc
         download_secret
@@ -134,7 +121,7 @@ case "$distro_type" in
     "ubuntu")
         install_azure_cli_ubuntu
         # Retrieve commands which were uploaded from custom data and create shell script
-        cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/keyVault.sh"
+        cat /var/lib/cloud/instance/user-data.txt > "/root/scripts/downloadsecret.sh"
         create_cron_job
         download_secret
         ;;
