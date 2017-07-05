@@ -16,7 +16,7 @@
 		},
 		"linuxOSVersion": {
 			"type": "string",
-			"allowedValues": ["Ubuntu 16.04-LTS"],
+			"allowedValues": ["16.04-LTS"],
 			"metadata": {
 				"description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
 			}
