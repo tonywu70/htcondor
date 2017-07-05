@@ -27,7 +27,7 @@
 		"properties": {
 			"roleDefinitionId": "[variables('owner')]",
 			"principalId": "[parameters('principalId')]",
-			"scope": "[resourceId('f5a67d06-2d09-4090-91cc-e3298907a021', 'gahptestrg', 'Microsoft.KeyVault/vaults', 'gahptestrgkv')]"
+			"scope": "/subscriptions/f5a67d06-2d09-4090-91cc-e3298907a021/resourceGroups/gahptestrg/providers/Microsoft.KeyVault/vaults/gahpttestrgkv"
 		}
 	}]
 }
