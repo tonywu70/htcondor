@@ -99,6 +99,7 @@
 		"adminPasswordChosen": "[concat('adminPassword', parameters('authenticationType'))]",
 		"adminPasswordsshPublicKey": "",
 		"adminPasswordpassword": "[parameters('adminPasswordorSSHKey')]",
+		"deploymentAPIVersion": "2016-09-01",
         "createVMSSUrl": "[concat(parameters('_artifactsLocation'), '/createVMSS.json', parameters('_artifactsLocationSasToken'))]",
 		"createRBACUrl": "[concat(parameters('_artifactsLocation'), '/setUpRBAC.json', parameters('_artifactsLocationSasToken'))]"
 	},
