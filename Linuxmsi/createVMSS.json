@@ -14,12 +14,11 @@
 				"description": "Password for the Virtual Machine."
 			}
 		},
-		"windowsOSVersion": {
+		"linuxOSVersion": {
 			"type": "string",
-			"allowedValues": ["2016-Datacenter-with-Containers",
-			"2016-Datacenter"],
+			"allowedValues": ["Ubuntu 16.04-LTS"],
 			"metadata": {
-				"description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+				"description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
 			}
 		},
 		"location": {
@@ -106,9 +105,9 @@
 						"createOption": "FromImage"
 					},
 					"imageReference": {
-						"publisher": "MicrosoftWindowsServer",
-						"offer": "WindowsServer",
-						"sku": "[parameters('windowsOSVersion')]",
+						"publisher": "Canonical",
+						"offer": "UbuntuServer",
+						"sku": "[parameters('linuxOSVersion')]",
 						"version": "latest"
 					}
 				},
@@ -151,5 +150,4 @@
 			"value": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),variables('managedIdentityAPIVersion')).principalId]"
 		}
 	}
-}
 }
