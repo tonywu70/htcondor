@@ -236,8 +236,7 @@
 				
 			}
 		}
-	}
-    ],
+	}],
 	{
 		"name": "creatingRBAC",
 		"type": "Microsoft.Resources/deployments",
