@@ -235,8 +235,7 @@
 				
 			}
 		}
-	}
-    ],
+	},
 	{
 		"name": "creatingRBAC",
 		"type": "Microsoft.Resources/deployments",
@@ -257,7 +256,8 @@
 				}
 			}
 		}
-	},
+	}
+    ],
 	"outputs": {
 		"hostname": {
 			"type": "string",
