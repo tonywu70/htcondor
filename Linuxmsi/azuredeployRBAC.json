@@ -28,7 +28,7 @@
       "properties": {
         "roleDefinitionId": "[variables(parameters('builtInRoleType'))]",
         "principalId": "[parameters('principalId')]",
-        "scope": "[resourceId('Microsoft.KeyVault/vaults/gahptestrgkv')]"
+        "scope": "[resourceId('f5a67d06-2d09-4090-91cc-e3298907a021', 'gahptestrg', 'Microsoft.KeyVault/vaults', 'gahptestrgkv')]"
       }
     }
   ]
