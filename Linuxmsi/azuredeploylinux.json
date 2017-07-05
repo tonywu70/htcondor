@@ -2,39 +2,25 @@
 	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
-		"keyvaultName": {
-			"type": "string",
-			"metadata": {
-				"description": "Name of the Azure Key Vault"
-			}
-		},
 		"adminUsername": {
 			"type": "string",
 			"metadata": {
 				"description": "Username for the Virtual Machine."
 			}
 		},
-		"authenticationType": {
-			"type": "string",
-			"defaultValue": "password",
-			"allowedValues": ["password",
-			"sshPublicKey"],
-			"metadata": {
-				"description": "Authentication type"
-			}
-		},
-		"adminPasswordorSSHKey": {
+		"adminPassword": {
 			"type": "securestring",
 			"metadata": {
-				"description": "OS Admin password or SSH Key depending on value of authentication type"
+				"description": "Password for the Virtual Machine."
 			}
 		},
-		"dnsLabelPrefix": {
+		"linuxOSVersion": {
 			"type": "string",
+			"defaultValue": "Ubuntu 16.04-LTS",
+			"allowedValues": ["Ubuntu 16.04-LTS"],
 			"metadata": {
-				"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
-			},
-			"defaultValue": "[concat('msi',uniquestring(resourceGroup().id,deployment().name))]"
+				"description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+			}
 		},
 		"location": {
 			"type": "string",
@@ -49,6 +35,22 @@
 				"description": "The size of the VM to create"
 			},
 			"defaultValue": "Standard_DS1_V2"
+		},
+		"instanceCount": {
+			"type": "int",
+			"metadata": {
+				"description": "Number of VM instances (100 or less)."
+			},
+			"minValue": 1,
+			"maxValue": 100,
+			"defaultValue": 2
+		},
+		"overProvision": {
+			"type": "bool",
+			"metadata": {
+				"description": "Over Provision VMSS Instances"
+			},
+			"defaultValue": false
 		},
 		"_artifactsLocation": {
 			"type": "string",
@@ -66,45 +68,29 @@
 		}
 	},
 	"variables": {
-		"storageAccountName": "[take(concat(uniquestring(resourceGroup().id), parameters('dnsLabelPrefix')),24)]",
+		"vmssPrefix": "vmss",
+		"storageAccountName": "[concat(variables('vmssPrefix'),uniquestring(resourceGroup().id,deployment().name))]",
 		"nicName": "[concat('nic',uniquestring(resourceGroup().id,deployment().name))]",
 		"networkSecurityGroupName": "[concat('nsg',uniquestring(resourceGroup().id,deployment().name))]",
 		"addressPrefix": "10.0.0.0/16",
 		"subnetName": "Subnet",
 		"subnetPrefix": "10.0.0.0/24",
-		"publicIPAddressName": "[concat('pip',uniquestring(resourceGroup().id,deployment().name))]",
-		"vmName": "[concat('vm',uniquestring(resourceGroup().id,deployment().name))]",
+		"vmssName": "[concat(variables('vmssPrefix'),uniquestring(resourceGroup().id,deployment().name))]",
 		"virtualNetworkName": "[concat('vnet',uniquestring(resourceGroup().id,deployment().name))]",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
 		"computeAPIVersion": "2017-03-30",
 		"storageAPIVersion": "2016-12-01",
 		"networkAPIVersion": "2016-09-01",
-		"managedIdentityAPIVersion": "2015-08-31-PREVIEW",
-		"publisher": "Canonical",
-		"offer": "UbuntuServer",
-		"sku": "16.04-LTS",
-		"linuxConfigurationChosen": "[concat('linuxConfiguration', parameters('authenticationType'))]",
-		"linuxConfigurationsshPublicKey": {
-			"disablePasswordAuthentication": true,
-			"ssh": {
-				"publicKeys": [{
-					"path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
-					"keyData": "[parameters('adminPasswordorSSHKey')]"
-				}]
-			}
-		},
-		"linuxConfigurationpassword": {
-			"disablePasswordAuthentication": false
-		},
-		"adminPasswordChosen": "[concat('adminPassword', parameters('authenticationType'))]",
-		"adminPasswordsshPublicKey": "",
-		"adminPasswordpassword": "[parameters('adminPasswordorSSHKey')]",
 		"deploymentAPIVersion": "2016-09-01",
-        "createVMSSUrl": "[concat(parameters('_artifactsLocation'), '/createVMSS.json', parameters('_artifactsLocationSasToken'))]",
-		"createRBACUrl": "[concat(parameters('_artifactsLocation'), '/setUpRBAC.json', parameters('_artifactsLocationSasToken'))]"
+		"containerName": "msi",
+		"createVMSSUrl": "[concat(parameters('_artifactsLocation'), '/createVMSS.json', parameters('_artifactsLocationSasToken'))]",
+		"createRBACUrl": "[concat(parameters('_artifactsLocation'), '/setUpRBAC.json', parameters('_artifactsLocationSasToken'))]",
+        "keyvaultAPIVersion" : "2015-06-01",
+        "keyvaultName" : "gahptestrgkv"
 	},
-	"resources": [{
-		"type": "Microsoft.Storage/storageAccounts",
+	"resources": 
+    [{
+		"type": "Microsoft.Storage/storageAccounts/",
 		"name": "[variables('storageAccountName')]",
 		"apiVersion": "[variables('storageAPIVersion')]",
 		"location": "[parameters('Location')]",
@@ -114,18 +100,6 @@
 		"kind": "Storage",
 		"properties": {
 			
-		}
-	},
-	{
-		"apiVersion": "[variables('networkAPIVersion')]",
-		"type": "Microsoft.Network/publicIPAddresses",
-		"name": "[variables('publicIPAddressName')]",
-		"location": "[parameters('Location')]",
-		"properties": {
-			"publicIPAllocationMethod": "Dynamic",
-			"dnsSettings": {
-				"domainNameLabel": "[parameters('dnsLabelPrefix')]"
-			}
 		}
 	},
 	{
@@ -152,12 +126,12 @@
 		"location": "[parameters('location')]",
 		"properties": {
 			"securityRules": [{
-				"name": "default-allow-ssh",
+				"name": "default-allow-rdp",
 				"properties": {
 					"priority": 1000,
-					"sourceAddressPrefix": "*",
+					"sourceAddressPrefix": "VirtualNetwork",
 					"protocol": "TCP",
-					"destinationPortRange": "22",
+					"destinationPortRange": "3389",
 					"access": "Allow",
 					"direction": "Inbound",
 					"sourcePortRange": "*",
@@ -167,87 +141,55 @@
 		}
 	},
 	{
-		"apiVersion": "[variables('networkAPIVersion')]",
-		"type": "Microsoft.Network/networkInterfaces",
-		"name": "[variables('nicName')]",
-		"location": "[parameters('Location')]",
-		"dependsOn": ["[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-		"[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"],
+		"name": "creatingVMSS",
+		"type": "Microsoft.Resources/deployments",
+		"apiVersion": "[variables('deploymentApiVersion')]",
+		"dependsOn": ["[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+		"[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+		"[resourceId('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"],
 		"properties": {
-			"ipConfigurations": [{
-				"name": "ipconfig1",
-				"properties": {
-					"privateIPAllocationMethod": "Dynamic",
-					"publicIPAddress": {
-						"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
-					},
-					"subnet": {
-						"id": "[variables('subnetRef')]"
-					}
+			"mode": "Incremental",
+			"templateLink": {
+				"uri": "[variables('createVMSSUrl')]",
+				"contentVersion": "1.0.0.0"
+			},
+			"parameters": {
+				"adminUsername": {
+					"value": "[parameters('adminUsername')]"
+				},
+				"adminPassword": {
+					"value": "[parameters('adminPassword')]"
+				},
+				"linuxOSVersion": {
+					"value": "[parameters('linuxOSVersion')]"
+				},
+				"location": {
+					"value": "[parameters('location')]"
+				},
+				"vmSize": {
+					"value": "[parameters('vmSize')]"
+				},
+				"overProvision": {
+					"value": "[parameters('overProvision')]"
+				},
+				"vmssName": {
+					"value": "[variables('vmssName')]"
+				},
+				"vmssPrefix": {
+					"value": "[variables('vmssPrefix')]"
+				},
+				"nicName": {
+					"value": "[variables('nicName')]"
+				},
+				"subnetRef": {
+					"value": "[variables('subnetRef')]"
+				},
+				"networkSecurityGroupName": {
+					"value": "[variables('networkSecurityGroupName')]"
+				},
+				"storageAccountUri": {
+					"value": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
 				}
-			}],
-			"networkSecurityGroup": {
-				"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
-			}
-		}
-	},
-	{
-		"apiVersion": "[variables('computeAPIVersion')]",
-		"type": "Microsoft.Compute/virtualMachines",
-		"name": "[variables('vmName')]",
-		"location": "[parameters('Location')]",
-		"identity": {
-			"type": "systemAssigned"
-		},
-		"dependsOn": ["[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-		"[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"],
-		"properties": {
-			"hardwareProfile": {
-				"vmSize": "[parameters('vmSize')]"
-			},
-			"osProfile": {
-				"computerName": "[variables('vmName')]",
-				"adminUsername": "[parameters('adminUsername')]",
-				"adminPassword": "[variables(variables('adminPasswordChosen'))]",
-				"linuxConfiguration": "[variables(variables('linuxConfigurationChosen'))]"
-			},
-			"storageProfile": {
-				"imageReference": {
-					"publisher": "[variables('publisher')]",
-					"offer": "[variables('offer')]",
-					"sku": "[variables('sku')]",
-					"version": "latest"
-				}
-			},
-			"networkProfile": {
-				"networkInterfaces": [{
-					"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
-				}]
-			},
-			"diagnosticsProfile": {
-				"bootDiagnostics": {
-					"enabled": "true",
-					"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
-				}
-			}
-		}
-	},
-	{
-		"type": "Microsoft.Compute/virtualMachines/extensions",
-		"name": "[concat(variables('vmName'),'/MSILinuxExtension')]",
-		"apiVersion": "[variables('computeAPIVersion')]",
-		"location": "[parameters('Location')]",
-		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"],
-		"properties": {
-			"publisher": "Microsoft.ManagedIdentity",
-			"type": "ManagedIdentityExtensionForLinux",
-			"typeHandlerVersion": "1.0",
-			"autoUpgradeMinorVersion": true,
-			"settings": {
-				"port": 50342
-			},
-			"protectedSettings": {
-				
 			}
 		}
 	},
@@ -255,7 +197,7 @@
 		"name": "creatingRBAC",
 		"type": "Microsoft.Resources/deployments",
 		"apiVersion": "[variables('deploymentApiVersion')]",
-		"dependsOn": ["[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"],
+		"dependsOn": ["Microsoft.Resources/deployments/creatingVMSS"],
 		"properties": {
 			"mode": "Incremental",
 			"templateLink": {
@@ -267,20 +209,94 @@
 					"value": "[reference('Microsoft.Resources/deployments/creatingVMSS', variables('deploymentApiVersion')).outputs.principalId.value]"
 				},
 				"keyvaultName": {
-					"value": "[parameters('keyvaultName')]"
+					"value": "[variables('keyvaultName')]"
+				}
+			}
+		}
+	},
+	{
+		"type": "Microsoft.Compute/virtualMachineScaleSets",
+		"name": "[variables('vmssName')]",
+		"location": "[parameters('Location')]",
+		"apiVersion": "[variables('computeAPIVersion')]",
+		"dependsOn": ["[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+		"[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+		"Microsoft.Resources/deployments/creatingRBAC"],
+		"sku": {
+			"name": "[parameters('vmSize')]",
+			"tier": "Standard",
+			"capacity": "[parameters('instanceCount')]"
+		},
+		"identity": {
+			"type": "systemAssigned"
+		},
+		"properties": {
+			"upgradePolicy": {
+				"mode": "Manual"
+			},
+			"overprovision": "[Parameters('overProvision')]",
+			"virtualMachineProfile": {
+				"storageProfile": {
+					"osDisk": {
+						"caching": "ReadOnly",
+						"createOption": "FromImage"
+					},
+					"imageReference": {
+						"publisher": "Canonical",
+						"offer": "UbuntuServer",
+						"sku": "16.04-LTS",
+						"version": "latest"
+					}
+				},
+				"osProfile": {
+					"computerNamePrefix": "[variables('vmssPrefix')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"networkProfile": {
+					"networkInterfaceConfigurations": [{
+						"name": "[variables('nicName')]",
+						"properties": {
+							"primary": true,
+							"ipConfigurations": [{
+								"name": "ipconfig1",
+								"properties": {
+									"subnet": {
+										"id": "[variables('subnetRef')]"
+									}
+								}
+							}],
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": "true",
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
+					}
+				},
+				"extensionProfile": {
+					"extensions": [{
+						"name": "MSILinuxExtension",
+						"properties": {
+							"publisher": "Microsoft.ManagedIdentity",
+							"type": "ManagedIdentityExtensionForLinux",
+							"typeHandlerVersion": "1.0",
+							"autoUpgradeMinorVersion": true,
+							"settings": {
+								"port": 50342
+							},
+							"protectedSettings": {
+								
+							}
+						}
+					}]
 				}
 			}
 		}
 	}
-    ],
-	"outputs": {
-		"hostname": {
-			"type": "string",
-			"value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
-		},
-		"principalId": {
-			"type": "string",
-			"value": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),variables('managedIdentityAPIVersion')).principalId]"
-		}
-	}
+    ]
 }
