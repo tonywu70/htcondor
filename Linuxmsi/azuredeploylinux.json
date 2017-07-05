@@ -255,7 +255,7 @@
 		"name": "creatingRBAC",
 		"type": "Microsoft.Resources/deployments",
 		"apiVersion": "[variables('deploymentApiVersion')]",
-		"dependsOn": ["Microsoft.Resources/deployments/creatingVMSS"],
+		"dependsOn": "[resourceId('Microsoft.Compute/virtualMachines/', variables('vmName'))]",
 		"properties": {
 			"mode": "Incremental",
 			"templateLink": {
