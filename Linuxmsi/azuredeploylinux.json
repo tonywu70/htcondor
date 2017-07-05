@@ -2,7 +2,13 @@
 	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
-		"adminUsername": {
+		"keyvaultName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of the Key Vault."
+			}
+		},
+        "adminUsername": {
 			"type": "string",
 			"metadata": {
 				"description": "Username for the Virtual Machine."
@@ -16,8 +22,8 @@
 		},
 		"linuxOSVersion": {
 			"type": "string",
-			"defaultValue": "Ubuntu 16.04-LTS",
-			"allowedValues": ["Ubuntu 16.04-LTS"],
+			"defaultValue": "16.04-LTS",
+			"allowedValues": ["16.04-LTS"],
 			"metadata": {
 				"description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
 			}
@@ -85,8 +91,7 @@
 		"containerName": "msi",
 		"createVMSSUrl": "[concat(parameters('_artifactsLocation'), '/createVMSS.json', parameters('_artifactsLocationSasToken'))]",
 		"createRBACUrl": "[concat(parameters('_artifactsLocation'), '/setUpRBAC.json', parameters('_artifactsLocationSasToken'))]",
-        "keyvaultAPIVersion" : "2015-06-01",
-        "keyvaultName" : "gahptestrgkv"
+        "keyvaultAPIVersion" : "2015-06-01"
 	},
 	"resources": 
     [{
@@ -209,7 +214,7 @@
 					"value": "[reference('Microsoft.Resources/deployments/creatingVMSS', variables('deploymentApiVersion')).outputs.principalId.value]"
 				},
 				"keyvaultName": {
-					"value": "[variables('keyvaultName')]"
+					"value": "[parameters('keyvaultName')]"
 				}
 			}
 		}
