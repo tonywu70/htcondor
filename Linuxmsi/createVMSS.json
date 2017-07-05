@@ -107,7 +107,7 @@
 					"imageReference": {
 						"publisher": "Canonical",
 						"offer": "UbuntuServer",
-						"sku": "[parameters('linuxOSVersion')]",
+						"sku": "16.04-LTS",
 						"version": "latest"
 					}
 				},
