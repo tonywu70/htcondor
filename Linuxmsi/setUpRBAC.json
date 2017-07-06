@@ -18,22 +18,11 @@
 	"variables": {
 		"owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
 		"authAPIVersion": "2016-07-01",
-		"rName": "accessPolicies",
 		"RBACResourceName": "[concat(parameters('keyvaultName'),'/Microsoft.Authorization/',parameters('principalId'))]"
 	},
 	"resources": [{
-		"apiVersion": "[variables('authAPIVersion')]",
-		"name": "[variables('RBACResourceName')]",
-		"type": "Microsoft.KeyVault/vaults/providers/roleAssignments",
-		"properties": {
-			"roleDefinitionId": "[variables('owner')]",
-			"principalId": "[parameters('principalId')]",
-			"scope": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvaultName'))]"
-		}
-	},
-	{
-		"apiVersion": "[variables('authAPIVersion')]",
-		"name": "parameters('keyvaultName')",
+		"apiVersion": "2016-10-01",
+		"name": "[parameters('keyvaultName')]",
 		"type": "Microsoft.KeyVault/vaults",
 		"location": "centralindia",
 		"tags": {
@@ -48,40 +37,6 @@
 			"accessPolicies": [{
 				"tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
 				"objectId": "9f78c2fe-ba10-4978-bf29-8a155b0a96cc",
-				"permissions": {
-					"keys": ["Get",
-					"List",
-					"Update",
-					"Create",
-					"Import",
-					"Delete",
-					"Recover",
-					"Backup",
-					"Restore"],
-					"secrets": ["Get",
-					"List",
-					"Set",
-					"Delete",
-					"Recover",
-					"Backup",
-					"Restore"],
-					"certificates": ["Get",
-					"List",
-					"Update",
-					"Create",
-					"Import",
-					"Delete",
-					"ManageContacts",
-					"ManageIssuers",
-					"GetIssuers",
-					"ListIssuers",
-					"SetIssuers",
-					"DeleteIssuers"]
-				}
-			},
-			{
-				"tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
-				"objectId": "5d73a066-c703-454d-82bf-a83634df1db8",
 				"permissions": {
 					"keys": ["Get",
 					"List",
@@ -148,7 +103,7 @@
 				}
 			}],
 			"enabledForDeployment": true,
-			"enabledForDiskEncryption": false,
+			"enabledForDiskEncryption": true,
 			"enabledForTemplateDeployment": true
 		}
 	}]
