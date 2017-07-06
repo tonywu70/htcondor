@@ -23,7 +23,7 @@
 	"resources": [{
 		"apiVersion": "[variables('authAPIVersion')]",
 		"name": "[variables('RBACResourceName')]",
-		"type": "Microsoft.Authorization/roleAssignments",
+		"type": "Microsoft.KeyVault/vaults/providers/roleAssignments",
 		"properties": {
 			"roleDefinitionId": "[variables('owner')]",
 			"principalId": "[parameters('principalId')]",
