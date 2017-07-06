@@ -18,7 +18,8 @@
 	"variables": {
 		"owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
 		"authAPIVersion": "2016-07-01",
-		"RBACResourceName": "[concat(parameters('keyvaultName'),parameters('principalId'))]"
+		"rName": "accessPolicies",
+		"RBACResourceName": "[concat(parameters('keyvaultName'),'/Microsoft.Authorization/',parameters('principalId'))]"
 	},
 	"resources": [{
 		"apiVersion": "[variables('authAPIVersion')]",
@@ -31,8 +32,9 @@
 		}
 	},
 	{
-        "name": "gahptestrg2kv",
-        "type": "Microsoft.KeyVault/vaults",
+		"apiVersion": "[variables('authAPIVersion')]",
+		"name": "parameters('keyvaultName')",
+		"type": "Microsoft.KeyVault/vaults",
 		"location": "centralindia",
 		"tags": {
 			
