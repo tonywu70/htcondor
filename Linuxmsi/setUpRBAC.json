@@ -31,8 +31,8 @@
 		}
 	},
 	{
-		"dependsOn": "[variables('RBACResourceName')]",
-		"type": "Microsoft.KeyVault/vaults",
+        "name": "gahptestrg2kv",
+        "type": "Microsoft.KeyVault/vaults",
 		"location": "centralindia",
 		"tags": {
 			
@@ -113,7 +113,7 @@
 			},
 			{
 				"tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
-				"objectId": "327edd08-e438-4bf7-92c3-1d5e16d99463",
+				"objectId": "[parameters('principalId')]",
 				"permissions": {
 					"keys": ["Get",
 					"List",
@@ -146,7 +146,7 @@
 				}
 			}],
 			"enabledForDeployment": true,
-			"enabledForDiskEncryption": true,
+			"enabledForDiskEncryption": false,
 			"enabledForTemplateDeployment": true
 		}
 	}]
