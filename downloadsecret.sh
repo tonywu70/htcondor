@@ -89,6 +89,7 @@ main()
     echo "Downloading secret..."
     download_secret
     echo "Deleting redundant files..."
-    remove_redundant_files
+    echo $temp
+    #remove_redundant_files
 }
 main
