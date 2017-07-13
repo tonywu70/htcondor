@@ -13,6 +13,8 @@ script_name=$0
 keyvault_name=$1
 secret_name=$2
 tenant_id=$3
+temp=/root/secret
+mkdir -p $temp
 echo "Command: $script_name $keyvault_name $secret_name $tenant_id"
 
 distro_type=""
@@ -61,7 +63,6 @@ get_token()
     localhost_uri="http://localhost:50342/oauth2/token"
     curl -o $temp/token.json --data "$authority" $localhost_uri
     token=$(jq -r '.access_token' $temp/token.json)
-	cat $temp/token.json
 }
 download_secret()
 {
@@ -71,7 +72,6 @@ download_secret()
     secret_url="https://$keyvault_name.vault.azure.net/secrets/$secret_name?api-version=$api_version"
     curl -G -H "Authorization: Bearer $token" -o $temp/output.json --url $secret_url
     jq -r '.value' $temp/output.json > /root/$keyvault_name/$secret_name
-	cat $temp/output.json
 }
 remove_redundant_files()
 {
@@ -98,7 +98,7 @@ EOF
 }
 main()
 {
-    temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
+    #temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
     get_distro_type
     if ! command -v jq >/dev/null 2>&1
     then
