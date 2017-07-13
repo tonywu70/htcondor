@@ -97,7 +97,7 @@ EOF
 }
 main()
 {
-    temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
+    #temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
     get_distro_type
     if ! command -v jq >/dev/null 2>&1
     then
