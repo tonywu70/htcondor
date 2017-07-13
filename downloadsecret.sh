@@ -75,8 +75,7 @@ remove_redundant_files()
 }
 SETUP_L=/root/keyvault.setup
 cron_job()
-{
-	cp $script_name /root	
+{	
 	cat <<EOF>/root/keyvault.sh
 #!/bin/bash
 if [ -e "$SETUP_L" ]; then
@@ -115,6 +114,7 @@ main()
 		echo "We're already configured, exiting..."
 		exit 0
 	fi
+	cp $script_name /root
 	cron_job
 }
 main
