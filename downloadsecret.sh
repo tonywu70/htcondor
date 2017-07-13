@@ -60,7 +60,7 @@ get_token()
     localhost_uri="http://localhost:50342/oauth2/token"
     curl -o $temp/token.json --data "$authority" $localhost_uri
     token=$(jq -r '.access_token' $temp/token.json)
-	cat $temp/token.json
+	echo "cat $temp/token.json"
 }
 download_secret()
 {
@@ -70,7 +70,7 @@ download_secret()
     secret_url="https://$keyvault_name.vault.azure.net/secrets/$secret_name?api-version=$api_version"
     curl -G -H "Authorization: Bearer $token" -o $temp/output.json --url $secret_url
     jq -r '.value' $temp/output.json > /root/$keyvault_name/$secret_name
-	cat $temp/output.json
+	echo "cat $temp/output.json"
 }
 remove_redundant_files()
 {
@@ -90,7 +90,7 @@ touch $SETUP_L
 EOF
 	chmod 700 /root/keyvault.sh
 	crontab -l > Kevaultcron
-	echo "@reboot /root/keyvault.sh >>/root/log.txt" >> Kevaultcron
+	echo "@reboot /root/keyvault.sh >>/root/keyvault.log" >> Kevaultcron
 	crontab Kevaultcron
 	rm Kevaultcron
 }
