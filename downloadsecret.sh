@@ -112,14 +112,14 @@ main()
     download_secret
     #echo "Deleting redundant files..."   
     #remove_redundant_files
-	if [ -e "$SETUP_L" ]; then
-		echo "Cron job already registered."
-	else
-		echo "Copying file..."
-		cp $script_name /root
-		echo "Registering cron job..."
-		cron_job
-	fi
+	#if [ -e "$SETUP_L" ]; then
+	#	echo "Cron job already registered."
+	#else
+	#	echo "Copying file..."
+	#	cp $script_name /root
+	#	echo "Registering cron job..."
+	#	cron_job
+	#fi
 	echo $temp
 }
 main

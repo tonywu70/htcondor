@@ -76,16 +76,17 @@ remove_redundant_files()
 {
     rm -rf $temp
 }
-SETUP_L=/root/keyvault.setup
+
 cron_job()
 {	
 	cat <<EOF>/root/keyvault.sh
 #!/bin/bash
+SETUP_L=/root/keyvault.setup
 if [ -e "$SETUP_L" ]; then
     echo "We're already configured, exiting..."
     exit 0
 fi
-bash $script_name $keyvault_name $secret_name $tenant_id
+bash downloadsecret.sh $keyvault_name $secret_name $tenant_id
 touch $SETUP_L
 EOF
 	chmod 700 /root/keyvault.sh
@@ -106,20 +107,24 @@ main()
         echo "jq is available."
     fi
     jq --version
-    echo "Getting access token..."    
-    get_token
-    echo "Downloading secret..."
-    download_secret
+	echo "Copying file..."
+	cp downloadsecret.sh /root
+	echo "Registering cron job..."
+	cron_job
+    #echo "Getting access token..."    
+    #get_token
+    #echo "Downloading secret..."
+    #download_secret
     #echo "Deleting redundant files..."   
     #remove_redundant_files
-	if [ -e "$SETUP_L" ]; then
-		echo "Cron job already registered."
-	else
-		echo "Copying file..."
-		cp $script_name /root
-		echo "Registering cron job..."
-		cron_job
-	fi
+	#if [ -e "$SETUP_L" ]; then
+	#	echo "Cron job already registered."
+	#else
+	#	echo "Copying file..."
+	#	cp $script_name /root
+	#	echo "Registering cron job..."
+	#	cron_job
+	#fi
 	echo $temp
 }
 main
