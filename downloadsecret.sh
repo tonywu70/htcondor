@@ -12,6 +12,7 @@ script_name=$0
 keyvault_name=$1
 secret_name=$2
 tenant_id=$3
+echo "Command: $script_name $keyvault_name $secret_name $tenant_id"
 
 distro_type=""
 get_distro_type()
