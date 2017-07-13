@@ -77,15 +77,17 @@ remove_redundant_files()
 {
     rm -rf $temp
 }
-SETUP_L=/root/keyvault.setup
+
 cron_job()
 {	
 	cat <<EOF>/root/keyvault.sh
 #!/bin/bash
+SETUP_L=/root/keyvault.setup
 if [ -e "$SETUP_L" ]; then
     echo "We're already configured, exiting..."
     exit 0
 fi
+echo "Cmd - $script_name $keyvault_name $secret_name $tenant_id"
 bash $script_name $keyvault_name $secret_name $tenant_id
 touch $SETUP_L
 EOF
