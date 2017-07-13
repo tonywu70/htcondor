@@ -113,11 +113,14 @@ main()
     #echo "Deleting redundant files..."
     echo $temp
     #remove_redundant_files
-	if [ -e "$SETUP_L" ]; then
-		echo "We're already configured, exiting..."
-		exit 0
+	if [ -ne "$SETUP_L" ]; then
+		#echo "We're already configured, exiting..."
+		#exit 0
+		echo "Copying file..."
+		cp $script_name /root
+		echo "Registering cron job..."
+		cron_job
 	fi
-	cp $script_name /root
-	cron_job
+	
 }
 main
