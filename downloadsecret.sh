@@ -83,7 +83,7 @@ if [ -e "$SETUP_L" ]; then
     echo "We're already configured, exiting..."
     exit 0
 fi
-/root/$script_name $keyvault_name $secret_name $tenant_id
+bash $script_name $keyvault_name $secret_name $tenant_id
 touch $SETUP_L
 EOF
 	chmod 700 /root/keyvault.sh
