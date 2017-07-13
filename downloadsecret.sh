@@ -61,7 +61,6 @@ get_token()
     localhost_uri="http://localhost:50342/oauth2/token"
     curl -o $temp/token.json --data "$authority" $localhost_uri
     token=$(jq -r '.access_token' $temp/token.json)
-	cat $temp/token.json
 }
 download_secret()
 {
