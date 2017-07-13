@@ -110,17 +110,16 @@ main()
     get_token
     echo "Downloading secret..."
     download_secret
-    #echo "Deleting redundant files..."
-    echo $temp
+    #echo "Deleting redundant files..."   
     #remove_redundant_files
 	if [ -e "$SETUP_L" ]; then
-		echo "We're already configured, exiting..."
-		exit 0		
+		echo "Cron job already registered."
+	else
+		echo "Copying file..."
+		cp $script_name /root
+		echo "Registering cron job..."
+		cron_job
 	fi
-	echo "Copying file..."
-	cp $script_name /root
-	echo "Registering cron job..."
-	cron_job
-	
+	echo $temp
 }
 main
