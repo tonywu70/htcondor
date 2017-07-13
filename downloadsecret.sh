@@ -60,7 +60,7 @@ get_token()
     localhost_uri="http://localhost:50342/oauth2/token"
     curl -o $temp/token.json --data "$authority" $localhost_uri
     token=$(jq -r '.access_token' $temp/token.json)
-	echo "cat $temp/token.json"
+	cat $temp/token.json
 }
 download_secret()
 {
@@ -70,7 +70,7 @@ download_secret()
     secret_url="https://$keyvault_name.vault.azure.net/secrets/$secret_name?api-version=$api_version"
     curl -G -H "Authorization: Bearer $token" -o $temp/output.json --url $secret_url
     jq -r '.value' $temp/output.json > /root/$keyvault_name/$secret_name
-	echo "cat $temp/output.json"
+	cat $temp/output.json
 }
 remove_redundant_files()
 {
@@ -113,14 +113,14 @@ main()
     #echo "Deleting redundant files..."
     echo $temp
     #remove_redundant_files
-	if [ -ne "$SETUP_L" ]; then
-		#echo "We're already configured, exiting..."
-		#exit 0
-		echo "Copying file..."
-		cp $script_name /root
-		echo "Registering cron job..."
-		cron_job
+	if [ -e "$SETUP_L" ]; then
+		echo "We're already configured, exiting..."
+		exit 0		
 	fi
+	echo "Copying file..."
+	cp $script_name /root
+	echo "Registering cron job..."
+	cron_job
 	
 }
 main
