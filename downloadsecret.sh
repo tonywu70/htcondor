@@ -8,6 +8,7 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
+script_name=$0
 keyvault_name=$1
 secret_name=$2
 tenant_id=$3
@@ -72,6 +73,25 @@ remove_redundant_files()
 {
     rm -rf $temp
 }
+SETUP_L=/root/keyvault.setup
+cron_job()
+{
+	cp $script_name /root	
+	cat <<EOF>/root/keyvault.sh
+#!/bin/bash
+if [ -e "$SETUP_L" ]; then
+    echo "We're already configured, exiting..."
+    exit 0
+fi
+/root/$script_name $keyvault_name $secret_name $tenant_id
+touch $SETUP_L
+EOF
+	chmod 700 /root/keyvault.sh
+	crontab -l > Kevaultcron
+	echo "@reboot /root/keyvault.sh >>/root/log.txt" >> Kevaultcron
+	crontab Kevaultcron
+	rm Kevaultcron
+}
 main()
 {
     temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
@@ -88,8 +108,13 @@ main()
     get_token
     echo "Downloading secret..."
     download_secret
-    echo "Deleting redundant files..."
+    #echo "Deleting redundant files..."
     echo $temp
     #remove_redundant_files
+	if [ -e "$SETUP_L" ]; then
+		echo "We're already configured, exiting..."
+		exit 0
+	fi
+	cron_job
 }
 main
