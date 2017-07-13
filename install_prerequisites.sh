@@ -84,11 +84,11 @@ cron_job()
 #!/bin/bash
 #SETUP_L=/root/keyvault.setup
 #if [ -e "$SETUP_L" ]; then
-#    echo "We're already configured, exiting..."
+#   echo "We're already configured, exiting..."
 #    exit 0
 #fi
 echo "Cmd - $script_name $keyvault_name $secret_name $tenant_id"
-bash $script_name $keyvault_name $secret_name $tenant_id
+bash downloadsecret.sh $keyvault_name $secret_name $tenant_id
 #touch $SETUP_L
 EOF
 	chmod 700 /root/keyvault.sh
