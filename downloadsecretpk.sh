@@ -13,6 +13,7 @@ keyvault_name=$1
 secret_name=$2
 tenant_id=$3
 temp=/root/output
+mkdir -p $temp
 echo "Command: $script_name $keyvault_name $secret_name $tenant_id"
 
 distro_type=""
