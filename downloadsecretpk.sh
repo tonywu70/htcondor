@@ -116,14 +116,15 @@ main()
     download_secret
     #echo "Deleting redundant files..."   
     #remove_redundant_files
-	if [ -e "$SETUP_L" ]; then
+	SETUP_MARKER=/var/tmp/master-setup.marker
+	if [ -e "$SETUP_MARKER" ]; then
 		echo "Cron job already registered."
-	else
-		echo "Copying file..."
-		cp $script_name /root
-		echo "Registering cron job..."
-		cron_job
-	fi
-	echo $temp
+		exit 0
+	fi	
+	echo "Copying file..."
+	cp $script_name /root
+	echo "Registering cron job..."
+	cron_job
+	touch $SETUP_MARKER
 }
 main
