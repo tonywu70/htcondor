@@ -12,6 +12,10 @@ keyvault_name=$1
 secret_name=$2
 tenant_id=$3
 
+temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
+echo "Using below temporary location:"
+echo $temp
+
 distro_type=""
 get_distro_type()
 {
@@ -25,6 +29,15 @@ get_distro_type()
     elif [[ $(echo "$release_info" | grep 'Scientfic Linux') != "" ]]; then 
         distro_type="centos";
     fi;
+}
+get_status_of_last_execution()
+{
+    if [ $? -eq 0 ]; then
+        echo "complete"
+    else
+        echo "failed. Please see script-execution.log"
+        exit 1
+    fi
 }
 # Install jq JSON parser in CentOS or Red Hat
 install_jq_redhat_centos()
@@ -66,30 +79,37 @@ download_secret()
     api_version="2016-10-01"
     secret_url="https://$keyvault_name.vault.azure.net/secrets/$secret_name?api-version=$api_version"
     curl -G -H "Authorization: Bearer $token" -o $temp/output.json --url $secret_url
-    jq -r '.value' $temp/output.json > /root/$keyvault_name/$secret_name
+    jq -r 'select(.value != null) | .value' $temp/output.json > /root/$keyvault_name/$secret_name
 }
 remove_redundant_files()
 {
     rm -rf $temp
 }
-main()
-{
-    temp=$(mktemp -d -t download_secret_tmp_XXXX) || exit
-    get_distro_type
-    if ! command -v jq >/dev/null 2>&1
-    then
-        echo "Installing jq..."
-        install_jq
-    else
-        echo "jq is available."
-    fi
-    jq --version
-    echo "Getting access token..."    
-    get_token
-    echo "Downloading secret..."
-    download_secret
-    echo "Deleting redundant files..."
-    echo $temp
-    #remove_redundant_files
-}
-main
+
+echo "Getting Linux distribution type..."
+get_distro_type
+echo "Getting Linux distribution type:" $(get_status_of_last_execution)
+
+echo "Checking for jq..."
+if ! command -v jq >/dev/null 2>&1
+then
+    echo "Jq is not installed. Installing jq..."
+    install_jq
+    echo "Installing jq:" $(get_status_of_last_execution)
+else
+    echo "jq is already installed"
+fi
+echo "Checking for jq:" $(get_status_of_last_execution)
+jq --version
+
+echo "Getting access token..."
+get_token
+echo "Getting access token:" $(get_status_of_last_execution)
+
+echo "Downloading secret..."
+download_secret
+echo "Downloading secret:" $(get_status_of_last_execution)
+
+echo "Deleting redundant files..."
+remove_redundant_files
+echo "Deleting redundant files:" $(get_status_of_last_execution)
